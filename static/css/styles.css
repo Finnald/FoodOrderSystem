@@ -12,3 +12,18 @@ a {
     text-align: center;
     font-size:200%;
 }
+
+table{
+    border-bottom: 1px, solid, black;
+    text-align:center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-collapse:collapse;
+}
+
+tr, td, th{
+    padding: 10px;
+    border: solid;
+    border-width: 1px;
+}
