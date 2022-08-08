@@ -1,29 +1,4 @@
-body {
-    font-family: Arial, Helvetica, sans-serif;
-}
-
-h1 {
-    text-align:center;
-    margin-top:2%;
-    font-size:300%;
-}
-
-a {
-    text-align: center;
-    font-size:200%;
-}
-
-table{
-    border-bottom: 1px, solid, black;
-    text-align:center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-collapse:collapse;
-}
-
-tr, td, th{
-    padding: 10px;
-    border: solid;
-    border-width: 1px;
+.col {
+    height: 80px;
+    width: 100%
 }

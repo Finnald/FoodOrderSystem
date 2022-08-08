@@ -1,19 +1,17 @@
-from flask import Flask
-from flask import render_template
+from flask import Flask, render_template
 
-app = Flask("__FoodOrderSystem__")
+app = Flask("__FoodOrderSystem__", template_folder="templates", static_folder="static")
 @app.route("/")
 def index():
-    name = "Joey"
-    return render_template("Home.html", title="Food Order System", username=name )
+    return render_template("index.html", title="Food Order System")
 
 @app.route("/login")
 def login():
-    return render_template("Login.html")
+    return render_template("login.html")
 
-@app.route("/user/options")
+@app.route("/retail/options")
 def options():
-    return render_template("User.html")
+    return render_template("retail.html")
 
 @app.route("/user/createorder")
 def createorder():
