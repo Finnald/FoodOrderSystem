@@ -13,7 +13,7 @@ def login():
 def options():
     return render_template("retail.html")
 
-@app.route("/user/createorder")
+@app.route("/retail/createorder")
 def createorder():
     return render_template("neworder.html")
 
