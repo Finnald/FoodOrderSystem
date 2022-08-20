@@ -1,7 +1,7 @@
 from pickle import TRUE
 from typing import final
 from urllib import request
-from flask import Flask, render_template, request, session
+from flask import Flask, render_template, request, session, redirect
 import sqlite3
 
 app = Flask("__FoodOrderSystem__", template_folder="templates", static_folder="static")
@@ -46,18 +46,46 @@ def login():
 def createaccount():
     return render_template("signup.html")
     
-
-@app.route("/retail/options", methods=["GET","POST"])
-def options():
+@app.route("/validate", methods=["GET", "POST"])
+def validate():
     if request.method == "POST":
+        conn
         session["login"] = request.form
         login = session["login"]
         username = login["username"]
-        return render_template("retail.html", username = username)
-    elif request.method =="GET":
-        login = session["login"]
-        username = login["username"]
-        return render_template("retail.html", username = username)
+        pwd = login["pwd"]
+        userlogin = (username, pwd)
+        try:
+            with sqlite3.connect(db) as con:
+                cur=con.cursor()
+                cur.execute("SELECT UserName, Password FROM Users")
+                userlist = cur.fetchall()
+                print(username)
+                print(userlist)
+                print(userlogin)
+                if userlogin in userlist:
+                    print("joey")
+                    confirm=True
+                else:
+                    print("noey")
+                    confirm=False
+        except:
+            print("bad")
+            confirm = False
+        finally:
+            username = login["username"]
+            print(confirm)
+            confirm=confirm
+    elif request.method == "GET":
+        confirm = False
+    print(confirm)
+    return render_template("loginvalidation.html", username=username, confirm=confirm)
+
+
+@app.route("/retail/options", methods=["GET","POST"])
+def options():
+    username = session["login"]["username"]
+    return render_template("retail.html", username = username)
 
 @app.route("/retail/createorder")
 def createorder():
