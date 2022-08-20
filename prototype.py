@@ -10,12 +10,15 @@ conn = sqlite3.connect("foodsystem.db")
 db = "foodsystem.db"
 
 
+# route for index.hmtl, will immediately redirect to login page
 @app.route("/")
 def index():
-    return render_template("index.html", title="Food Order System")
+    return render_template("index.html")
 
+#login page, POST from creating an account in the account page.
 @app.route("/login", methods=["GET","POST"])
 def login():
+    #POST from account page
     if request.method == "POST":
         conn
         print("Opened database successfully")
@@ -28,7 +31,7 @@ def login():
 
             with sqlite3.connect(db) as con:
                 cur = con.cursor()
-                cur.execute("INSERT INTO Users (UserName,FirstName,LastName,Password) VALUES(?,?,?,?)", (newUser,fname,lname,newPwd))
+                cur.execute("INSERT INTO Users (UserName,FirstName,LastName,Password,UserType) VALUES(?,?,?,?)", (newUser,fname,lname,newPwd,"retail"))
                 con.commit()
                 print("succ")
                 msg = "Account created successfully"
@@ -40,6 +43,7 @@ def login():
             return render_template("login.html", msg = msg)
 
     if request.method =="GET":
+        session.pop("login", None)
         return render_template("login.html")
 
 @app.route("/createaccount", methods=["GET","POST"])
@@ -60,12 +64,12 @@ def validate():
                 cur=con.cursor()
                 cur.execute("SELECT UserName, Password FROM Users")
                 userlist = cur.fetchall()
-                print(username)
-                print(userlist)
-                print(userlogin)
                 if userlogin in userlist:
                     print("joey")
+                    cur.execute(f"SELECT UserType FROM Users WHERE UserName = '{username}'")
+                    type = cur.fetchall()
                     confirm=True
+                        
                 else:
                     print("noey")
                     confirm=False
@@ -79,7 +83,7 @@ def validate():
     elif request.method == "GET":
         confirm = False
     print(confirm)
-    return render_template("loginvalidation.html", username=username, confirm=confirm)
+    return render_template("loginvalidation.html", username=username, confirm=confirm, type=type, retail=([('retail',)]))
 
 
 @app.route("/retail/options", methods=["GET","POST"])
@@ -97,7 +101,7 @@ def viewpastorders():
 
 @app.route("/staff")
 def staffoptions():
-    return render_template("staff.html")
+    return render_template("staff.html", username = session["login"]["username"])
 
 @app.route("/staff/allorders")
 def revieworders():
