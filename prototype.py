@@ -21,16 +21,16 @@ def createorder():
 def viewpastorders():
     return render_template("viewporders.html")
 
-@app.route("/user/staff/options")
+@app.route("/staff")
 def staffoptions():
-    return render_template("staffpage.html")
+    return render_template("staff.html")
 
-@app.route("/user/staff/revieworders")
+@app.route("/staff/allorders")
 def revieworders():
-    return render_template("review.html")
+    return render_template("staffAll.html")
 
-@app.route("/user/order/checkout")
+@app.route("/retail/cart")
 def checkout():
-    return render_template("Checkout.html")
+    return render_template("cart.html")
 
 app.run(host="0.0.0.0", port=81)
