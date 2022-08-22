@@ -3,6 +3,7 @@ from typing import final
 from urllib import request
 from flask import Flask, render_template, request, session, redirect
 import sqlite3
+from datetime import date
 
 app = Flask("__FoodOrderSystem__", template_folder="templates", static_folder="static")
 app.secret_key = "Dgjoewheighe"
@@ -16,6 +17,15 @@ def fetchQuery(query):
     result = cur.fetchall()
     return result
 
+def commitQuery(query):
+    con = sqlite3.connect(db)
+    print("connected")
+    cur = con.cursor()
+    print("cursor")
+    cur.execute(query)
+    print("Query executed")
+    con.commit()
+    print("committed")
 
 # route for index.hmtl, will immediately redirect to login page
 @app.route("/")
@@ -92,6 +102,25 @@ def validate():
     print(confirm)
     return render_template("loginvalidation.html", username=username, confirm=confirm, type=type, retail=([('retail',)]), staff=([('staff',)]))
 
+@app.route("/joey", methods=["GET","POST"])
+def foodcreation():
+    msg=""
+    if request.method == "POST":
+        try:
+            foodname = request.form["foodname"]
+            descr = request.form["description"]
+            itemprice = request.form["price"]
+            category = request.form["category"]
+            with sqlite3.connect(db) as con:
+                cur = con.cursor()
+                cur.execute("INSERT INTO Items (ItemName,ItemDescription,ItemPrice,Category) VALUES(?,?,?,?)", (foodname, descr, itemprice, category))
+                con.commit()
+                msg = "item created"
+        except:
+            print("exception")
+            msg = "try again"
+    return render_template("foodcreation.html", msg=msg)
+
 
 @app.route("/retail/options", methods=["GET","POST"])
 def options():
@@ -116,14 +145,8 @@ def vieworder(OrderID):
         count = 0
         for item in orderitems:
             orderlist = list(orderitems[count])
-            print("step 1")
-            print(orderlist)
             orderlist[3] = orderlist[3]*orderlist[2]
-            print("step 2")
-            print(orderlist)
             orderlists.append(orderlist)
-            print("step 3")
-            print(orderlists)
             count +=1
         orderitems = tuple(orderlists)
         print(orderitems)
@@ -132,8 +155,7 @@ def vieworder(OrderID):
         orderprice=0
         orderitems=0
         print("exception")
-    #return f"for order {OrderID} {orderitems} {orderprice}"
-    return render_template("vieworder.html", orderprice=orderprice[0][0], orderitems=orderitems)
+    return render_template("vieworder.html", orderprice=orderprice[0][0], orderitems=orderitems, username = session["login"]["username"], OrderID = OrderID)
 
 @app.route("/retail/createorder")
 def createorder():
@@ -145,11 +167,24 @@ def viewpastorders():
 
 @app.route("/staff")
 def staffoptions():
-    return render_template("staff.html", username = session["login"]["username"])
+    today = date.today().strftime("%d/%m")
+    try:
+        with sqlite3.connect(db) as con:
+            orderlist = fetchQuery(f"SELECT Orders.*, Users.FirstName, Users.LastName FROM Orders INNER JOIN Users ON Orders.UserID = Users.UserID WHERE Date = '{today}'")
+    except:
+        orderlist=[]
+        print("exception")
+    return render_template("staff.html", username = session["login"]["username"], orderlist = orderlist, today=today)
 
 @app.route("/staff/allorders")
 def revieworders():
-    return render_template("staffAll.html")
+    try:
+        with sqlite3.connect(db) as con:
+            orderlist = fetchQuery(f"SELECT Orders.*, Users.FirstName, Users.LastName FROM Orders INNER JOIN Users ON Orders.UserID = Users.UserID")
+    except:
+        orderlist=[]
+        print("exception")
+    return render_template("staffAll.html", username = session["login"]["username"], orderlist = orderlist)
 
 @app.route("/retail/cart")
 def checkout():
