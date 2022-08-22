@@ -159,7 +159,10 @@ def vieworder(OrderID):
 
 @app.route("/retail/createorder")
 def createorder():
-    return render_template("neworder.html")
+    lunch = fetchQuery("SELECT * FROM Items WHERE Category = 'Lunch'")
+    drinks = fetchQuery("SELECT * FROM Items WHERE Category = 'Drink'")
+    snacks = fetchQuery("SELECT * FROM Items WHERE Category = 'Snack'")
+    return render_template("neworder.html", lunch=lunch, drinks=drinks, snacks=snacks)
 
 @app.route("/user/pastorders")
 def viewpastorders():
