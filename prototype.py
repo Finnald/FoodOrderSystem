@@ -110,10 +110,30 @@ def options():
 @app.route("/orders/<OrderID>")
 def vieworder(OrderID):
     try:
-        orderitems = fetchQuery(f"SELECT OrderItems.ItemID, Items.ItemName, ItemQuantity FROM OrderItems INNER JOIN Items on items.ItemID = OrderItems.ItemID WHERE OrderID = {OrderID}")
+        orderitems = fetchQuery(f"SELECT OrderItems.ItemID, Items.ItemName, ItemQuantity, Items.ItemPrice FROM OrderItems INNER JOIN Items on items.ItemID = OrderItems.ItemID WHERE OrderID = {OrderID}")
+        print(orderitems)
+        orderlists = []
+        count = 0
+        for item in orderitems:
+            orderlist = list(orderitems[count])
+            print("step 1")
+            print(orderlist)
+            orderlist[3] = orderlist[3]*orderlist[2]
+            print("step 2")
+            print(orderlist)
+            orderlists.append(orderlist)
+            print("step 3")
+            print(orderlists)
+            count +=1
+        orderitems = tuple(orderlists)
+        print(orderitems)
+        orderprice = fetchQuery(f"SELECT TotalPrice FROM Orders WHERE OrderID = {OrderID}")
     except:
+        orderprice=0
+        orderitems=0
         print("exception")
-    return f"Page for order {OrderID}, {orderitems}"
+    #return f"for order {OrderID} {orderitems} {orderprice}"
+    return render_template("vieworder.html", orderprice=orderprice[0][0], orderitems=orderitems)
 
 @app.route("/retail/createorder")
 def createorder():
