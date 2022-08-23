@@ -4,6 +4,8 @@ from urllib import request
 from flask import Flask, render_template, request, session, redirect
 import sqlite3
 from datetime import date
+import json
+from collections import Counter
 
 app = Flask("__FoodOrderSystem__", template_folder="templates", static_folder="static")
 app.secret_key = "Dgjoewheighe"
@@ -22,10 +24,11 @@ def commitQuery(query):
     print("connected")
     cur = con.cursor()
     print("cursor")
-    cur.execute(query)
+    sqlite3.connect(db).cursor().execute(query)
     print("Query executed")
     con.commit()
     print("committed")
+
 
 # route for index.hmtl, will immediately redirect to login page
 @app.route("/")
@@ -191,6 +194,38 @@ def revieworders():
 
 @app.route("/retail/cart")
 def checkout():
-    return render_template("cart.html")
+    cartDict = session["cartDict"]
+    itemPriceDict = {}
+    nameDict={}
+    totalPrice=0
+    for key in cartDict:
+        itemName = fetchQuery(f"SELECT ItemName FROM Items WHERE ItemID = {key}")[0][0]
+        nameDict.update({key:itemName})
+        itemPrice = fetchQuery(f"SELECT ItemPrice FROM Items WHERE ItemID = {key}")[0][0]
+        itemPriceDict.update({key:itemPrice})
+        totalPrice = totalPrice + itemPriceDict[key]*cartDict[key]
+        print(totalPrice)
+
+    print(cartDict)
+    print(nameDict)
+    print(itemPriceDict)
+    return render_template("cart.html", cartDict=cartDict, nameDict=nameDict, itemPriceDict=itemPriceDict, totalPrice=totalPrice)
+
+@app.route("/cart/<string:itemList>", methods = ["POST"])
+def retrieveCartList(itemList):
+    itemList = itemList.split(",")
+    count=0
+    for item in itemList:
+        newItem = itemList[count]
+        newItem = int(newItem)
+        itemList[count] = newItem
+        count +=1
+    print(itemList)
+    cartDict = dict(Counter(itemList))
+    #for key in cartDict:
+    session["cartDict"] = cartDict
+    session["itemList"] = itemList
+
+    return("/")
 
 app.run(host="0.0.0.0", port=81)
