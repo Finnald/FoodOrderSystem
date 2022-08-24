@@ -13,6 +13,12 @@ function sendlist() {
     request.send()
 }
 
+function sendCheckout() {
+    const insertRequest = new XMLHttpRequest()
+    insertRequest.open("POST", `/system/insert`)
+    insertRequest.send()
+}
+
 function delay(URL) {
     setTimeout( function() { window.location = URL }, 500 );
 }

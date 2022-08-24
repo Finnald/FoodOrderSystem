@@ -20,14 +20,16 @@ def fetchQuery(query):
     return result
 
 def commitQuery(query):
-    con = sqlite3.connect(db)
-    print("connected")
-    cur = con.cursor()
-    print("cursor")
-    sqlite3.connect(db).cursor().execute(query)
-    print("Query executed")
-    con.commit()
-    print("committed")
+    try:
+        con = sqlite3.connect(db)
+        cur = con.cursor()
+        cur.execute(query)
+        print("Query executed")
+        con.commit()
+        print("committed")
+    except:
+        con.rollback()
+        print("exception")
 
 
 # route for index.hmtl, will immediately redirect to login page
@@ -209,7 +211,9 @@ def checkout():
     print(cartDict)
     print(nameDict)
     print(itemPriceDict)
-    return render_template("cart.html", cartDict=cartDict, nameDict=nameDict, itemPriceDict=itemPriceDict, totalPrice=totalPrice)
+    session["itemPriceDict"] = itemPriceDict
+    session["totalPrice"] = totalPrice
+    return render_template("cart.html", cartDict=cartDict, nameDict=nameDict, itemPriceDict=itemPriceDict, totalPrice=totalPrice, itemTotal=session["itemCount"])
 
 @app.route("/cart/<string:itemList>", methods = ["POST"])
 def retrieveCartList(itemList):
@@ -223,9 +227,25 @@ def retrieveCartList(itemList):
     print(itemList)
     cartDict = dict(Counter(itemList))
     #for key in cartDict:
+    session["itemCount"] = count
     session["cartDict"] = cartDict
     session["itemList"] = itemList
 
+    return("/")
+
+@app.route("/system/insert", methods = ["POST"])
+def insertOrder():
+    itemPriceDict = session["itemPriceDict"]
+    totalPrice = session["totalPrice"]
+    cartDict = session["cartDict"]
+    username = session["login"]["username"]
+    today = date.today().strftime("%d/%m")
+    userID = fetchQuery(f"SELECT UserID FROM Users WHERE Username = '{username}'")[0][0]
+    commitQuery(f"INSERT INTO Orders (UserID,Date,TotalPrice,CollectionTime) VALUES('{userID}','{today}','{totalPrice}','Lunch')")
+    orderID = fetchQuery("SELECT OrderID FROM Orders ORDER BY OrderID DESC LIMIT 1")[0][0]
+    print(orderID)
+    for item in cartDict:
+        commitQuery(f"INSERT INTO OrderItems (OrderID,ItemID,ItemQuantity) VALUES('{orderID}','{item}','{cartDict[item]}')")
     return("/")
 
 app.run(host="0.0.0.0", port=81)
