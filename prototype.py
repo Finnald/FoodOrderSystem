@@ -135,7 +135,7 @@ def options():
         with sqlite3.connect(db) as con:
             userID = fetchQuery(f"SELECT UserID FROM Users WHERE Username = '{username}'")
             print(userID)
-            orderlist = fetchQuery(f"SELECT * FROM Orders WHERE UserID = '{userID[0][0]}'")
+            orderlist = fetchQuery(f"SELECT * FROM Orders WHERE UserID = '{userID[0][0]}' ORDER BY OrderID DESC")
             print(orderlist)
     except:
         print("exception")
@@ -246,6 +246,21 @@ def insertOrder():
     print(orderID)
     for item in cartDict:
         commitQuery(f"INSERT INTO OrderItems (OrderID,ItemID,ItemQuantity) VALUES('{orderID}','{item}','{cartDict[item]}')")
+    return("/")
+
+@app.route("/system/<int:OrderID>", methods = ["POST"])
+def reorder(OrderID):
+    print("Joey")
+    orderitems = fetchQuery(f"SELECT * FROM OrderItems WHERE OrderID = {OrderID}")
+    order = fetchQuery(f"SELECT * FROM Orders WHERE OrderID = {OrderID}")
+    print("Reorder stuff:",orderitems, order)
+    commitQuery(f"INSERT INTO Orders (UserID,Date,TotalPrice,CollectionTime) VALUES('{order[0][1]}','{order[0][2]}','{order[0][3]}','{order[0][4]}')")
+    orderID = fetchQuery("SELECT OrderID FROM Orders ORDER BY OrderID DESC LIMIT 1")[0][0]
+    count=0
+    for item in orderitems:
+        print("orderitems stuff: ",orderitems[count][2],orderitems[count][3])
+        commitQuery(f"INSERT INTO OrderItems (OrderID,ItemID,ItemQuantity) VALUES('{orderID}','{orderitems[count][2]}','{orderitems[count][3]}')")
+        count+=1
     return("/")
 
 app.run(host="0.0.0.0", port=81)

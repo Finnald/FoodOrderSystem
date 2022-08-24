@@ -17,6 +17,15 @@ function sendCheckout() {
     const insertRequest = new XMLHttpRequest()
     insertRequest.open("POST", `/system/insert`)
     insertRequest.send()
+    setTimeout(function(){window.open("/retail/options", '_self')}, 500);
+}
+
+function reorder(OrderID) {
+    const reorderRequest = new XMLHttpRequest()
+    console.log(OrderID)
+    reorderRequest.open("POST", `/system/${(OrderID)}`)
+    reorderRequest.send()
+    setTimeout(function(){window.open("/retail/options", '_self')}, 500);
 }
 
 function delay(URL) {
